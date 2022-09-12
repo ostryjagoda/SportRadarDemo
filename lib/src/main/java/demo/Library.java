@@ -7,6 +7,8 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Library {
@@ -14,9 +16,9 @@ public class Library {
     @Data()
     public static class Game {
         @Setter(AccessLevel.PRIVATE)
-        private int homeScore;
+        private int homeScore = 0;
         @Setter(AccessLevel.PRIVATE)
-        private int awayScore;
+        private int awayScore = 0;
         @Setter(AccessLevel.PRIVATE)
         private String homeName;
         @Setter(AccessLevel.PRIVATE)
@@ -35,31 +37,77 @@ public class Library {
         public int hashCode() {
             return hash;
         }
+        @Override public boolean equals(Object o) {
+            if (o == this) return true;
+            if (!(o instanceof Game)) return false;
+            Game other = (Game) o;
+            return other.creationTimestamp == creationTimestamp &&
+                    other.hash == hash &&
+                    other.awayName == awayName &&
+                    other.homeName == homeName &&
+                    other.awayScore == awayScore &&
+                    other.homeScore == homeScore;
+        }
+        private int totalScore() {
+            return homeScore + awayScore;
+        }
     }
 
     private static IDisplay display = new Display();
+    private static List<Game> games = new ArrayList<>();
 
     public static void setDisplay(IDisplay display){
         Library.display = display;
     }
 
+    private static void render() {
+        StringBuilder sb = new StringBuilder();
+        for(Game g : games)
+            sb
+                    .append(g.getHomeName())
+                    .append(" - ")
+                    .append(g.getAwayName())
+                    .append(": ")
+                    .append(g.getHomeScore())
+                    .append(" - ")
+                    .append(g.getAwayScore())
+                    .append('\n');
+        if(sb.length() > 0)
+            sb.deleteCharAt(sb.length()-1);
+        display.set(sb.toString());
+    }
+
     public static Game startGame(String homeTeam, String awayTeam) {
-        throw new UnsupportedOperationException();
+        Game game = new Game(homeTeam, awayTeam);
+        games.add(game);
+        render();
+        return game;
     }
 
-    public static void finishGame(Game identifier) {
-        throw new UnsupportedOperationException();
+    public static void finishGame(Game game) {
+        games.remove(game);
+        render();
     }
 
-    public static void updateScore(Game identifier, int homeScore, int awayScore) {
-        throw new UnsupportedOperationException();
+    public static void updateScore(Game game, int homeScore, int awayScore) {
+        game.setHomeScore(homeScore);
+        game.setAwayScore(awayScore);
+        render();
     }
 
     public static List<Game> getASummaryOfGamesByTotalScore() {
-        throw new UnsupportedOperationException();
+        List<Game> toRet = new ArrayList<>(games);
+        Collections.sort(toRet, (g1, g2) -> {
+            int g1Sum = g1.totalScore();
+            int g2Sum = g2.totalScore();
+            if(g1Sum == g2Sum) return (int) (g2.creationTimestamp - g1.creationTimestamp);
+            else return g2Sum - g1Sum;
+        });
+        return toRet;
     }
 
     public static void reset() {
-
+        games.clear();
+        render();
     }
 }

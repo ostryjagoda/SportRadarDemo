@@ -15,10 +15,9 @@ public class LibraryTest {
     private static String currentDisplay = "";
 
     @Before
-    public static void clear() {
-        currentDisplay = "";
-        Library.reset();
+    public void clear() {
         Library.setDisplay(s -> currentDisplay = s);
+        Library.reset();
     }
 
     @Test
@@ -106,10 +105,10 @@ public class LibraryTest {
         Library.updateScore(game3, 99, 99);
         properResults.add(game5);
         Library.updateScore(game5, 99, 99);
-        properResults.add(game1);
-        Library.updateScore(game1, 80, 70);
         properResults.add(game6);
         Library.updateScore(game6, 70, 80);
+        properResults.add(game1);
+        Library.updateScore(game1, 80, 70);
         properResults.add(game4);
         Library.updateScore(game4, 60, 60);
         properResults.add(game2);
