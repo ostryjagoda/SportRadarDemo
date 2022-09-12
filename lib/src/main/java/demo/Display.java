@@ -19,7 +19,7 @@ public class Display implements IDisplay {
         }
         catch (final Exception e)
         {
-            //  Handle any exceptions.
+            throw new RuntimeException(e);
         }
     }
 

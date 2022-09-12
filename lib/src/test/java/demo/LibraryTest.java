@@ -3,13 +3,119 @@
  */
 package demo;
 
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.Assert.*;
 
 public class LibraryTest {
-    @Test public void someLibraryMethodReturnsTrue() {
-        Library.Game game;
-        assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
+    private static String currentDisplay = "";
 
+    @Before
+    public static void clear() {
+        currentDisplay = "";
+        Library.reset();
+        Library.setDisplay(s -> currentDisplay = s);
+    }
+
+    @Test
+    public void displaysGame() {
+        Library.Game game = Library.startGame("a", "b");
+        assertEquals("a - b: 0 - 0", currentDisplay);
+        Library.finishGame(game);
+        assertEquals("", currentDisplay);
+    }
+
+    @Test
+    public void displaysGameWithSpaces() {
+        Library.Game game = Library.startGame("a b", "c d");
+        assertEquals("a b - c d: 0 - 0", currentDisplay);
+        Library.finishGame(game);
+        assertEquals("", currentDisplay);
+    }
+
+    @Test
+    public void displaysGameWithNumbersAndSpaces() {
+        Library.Game game = Library.startGame("a b 7 77", "c d 999 9");
+        assertEquals("a b 7 77 - c d 999 9: 0 - 0", currentDisplay);
+        Library.finishGame(game);
+        assertEquals("", currentDisplay);
+    }
+
+    @Test
+    public void displaysAndChange() {
+        Library.Game game = Library.startGame("a", "b");
+        assertEquals("a - b: 0 - 0", currentDisplay);
+        Library.updateScore(game, 1, 5);
+        assertEquals("a - b: 1 - 5", currentDisplay);
+        Library.finishGame(game);
+        assertEquals("", currentDisplay);
+    }
+
+    @Test
+    public void displaysAndChangeToNegative() {
+        Library.Game game = Library.startGame("a", "b");
+        assertEquals("a - b: 0 - 0", currentDisplay);
+        Library.updateScore(game, 1, -5);
+        assertEquals("a - b: 1 - -5", currentDisplay);
+        Library.finishGame(game);
+        assertEquals("", currentDisplay);
+    }
+
+    @Test
+    public void displaysComplexCase() {
+        Library.Game game = Library.startGame("a", "b");
+        assertEquals("a - b: 0 - 0", currentDisplay);
+        Library.updateScore(game, -1, 128);
+        assertEquals("a - b: -1 - 128", currentDisplay);
+        Library.Game game1 = Library.startGame("a", "b");
+        assertEquals("a - b: -1 - 128\n" +
+                     "a - b: 0 - 0", currentDisplay);
+        Library.Game game2 = Library.startGame("castaway", "doodooo");
+        assertEquals("a - b: -1 - 128\n" +
+                "a - b: 0 - 0\n" +
+                "castaway - doodooo: 0 - 0", currentDisplay);
+        Library.updateScore(game, 128, 256);
+        Library.updateScore(game1, 64, 32);
+        Library.updateScore(game2, 1024, 256);
+        assertEquals("a - b: 128 - 256\n" +
+                "a - b: 64 - 32\n" +
+                "castaway - doodooo: 1024 - 256", currentDisplay);
+        Library.finishGame(game);
+        assertEquals("a - b: 64 - 32\n" +
+                "castaway - doodooo: 1024 - 256", currentDisplay);
+        Library.finishGame(game2);
+        assertEquals("a - b: 64 - 32", currentDisplay);
+        Library.finishGame(game1);
+        assertEquals("", currentDisplay);
+    }
+
+    @Test
+    public void returnsProperlyOrederedResults() {
+        Library.Game game1 = Library.startGame("team1", "team2");
+        Library.Game game2 = Library.startGame("team3", "team4");
+        Library.Game game3 = Library.startGame("team5", "team6");
+        Library.Game game4 = Library.startGame("team7", "team8");
+        Library.Game game5 = Library.startGame("team9", "team10");
+        Library.Game game6 = Library.startGame("team11", "team12");
+        List<Library.Game> properResults = new ArrayList<>();
+        properResults.add(game3);
+        Library.updateScore(game3, 99, 99);
+        properResults.add(game5);
+        Library.updateScore(game5, 99, 99);
+        properResults.add(game1);
+        Library.updateScore(game1, 80, 70);
+        properResults.add(game6);
+        Library.updateScore(game6, 70, 80);
+        properResults.add(game4);
+        Library.updateScore(game4, 60, 60);
+        properResults.add(game2);
+        assertArrayEquals(properResults.toArray(), Library.getASummaryOfGamesByTotalScore().toArray());
+        Library.finishGame(game3);
+        properResults.remove(0);
+        assertArrayEquals(properResults.toArray(), Library.getASummaryOfGamesByTotalScore().toArray());
     }
 }

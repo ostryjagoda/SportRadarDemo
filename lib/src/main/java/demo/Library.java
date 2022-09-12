@@ -12,7 +12,7 @@ import java.util.List;
 public class Library {
 
     @Data()
-    private static class Game {
+    public static class Game {
         @Setter(AccessLevel.PRIVATE)
         private int homeScore;
         @Setter(AccessLevel.PRIVATE)
@@ -57,5 +57,9 @@ public class Library {
 
     public static List<Game> getASummaryOfGamesByTotalScore() {
         throw new UnsupportedOperationException();
+    }
+
+    public static void reset() {
+
     }
 }
